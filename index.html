@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            padding: 15px;
+            border: 1px solid #ccc;
+            background-color: #ffffff;
+        }
+
+        h1, h2 {
+            text-align: center;
+        }
+
+        .product-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+        }
+
+        .product {
+            border: 1px solid #000;
+            padding: 10px;
+            margin: 10px;
+            width: 200px;
+            text-align: center;
+            box-shadow: 1px 1px 5px rgba(0,0,0,0.2);
+        }
+
+        button {
+            padding: 5px;
+            border: none;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+
+        .cart {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #000;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Shopping Cart</h1>
+        <div id="product-list" class="product-list"></div>
+        <h2>Cart (<span id="cart-count">0</span>)</h2>
+        <div id="cart" class="cart hidden"></div>
+        <button id="checkout-btn" class="hidden">Checkout</button>
+        <button id="clear-cart-btn" class="hidden">Clear Cart</button>
+    </div>
+
+    <script>
+        const products = [
+            { id: "1", name: "Candle", description: "A soothing scented candle.", price: 15, image: "https://example.com/candle.jpg" },
+            { id: "2", name: "Tea Set", description: "A beautiful tea set.", price: 35, image: "https://example.com/tea-set.jpg" },
+            { id: "3", name: "Zen Garden", description: "A mini Zen garden for relaxation.", price: 25, image: "https://example.com/zen-garden.jpg" },
+            { id: "4", name: "Throw Blanket", description: "A cozy throw blanket.", price: 40, image: "https://example.com/throw-blanket.jpg" },
+            { id: "5", name: "Sound Machine", description: "A sound machine for better sleep.", price: 50, image: "https://example.com/sound-machine.jpg" }
+        ];
+
+        let cart = {};
+
+        document.addEventListener('DOMContentLoaded', loadProducts);
+
+        function loadProducts() {
+            const productList = document.getElementById('product-list');
+            products.forEach(product => {
+                const productDiv = document.createElement('div');
+                productDiv.className = 'product';
+                productDiv.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}" />
+                    <h3>${product.name}</h3>
+                    <p>${product.description}</p>
+                    <p>$${product.price}</p>
+                    <button onclick="addToCart('${product.id}')">Add to Cart</button>
+                `;
+                productList.appendChild(productDiv);
+            });
+        }
+
+        function addToCart(id) {
+            if (!cart[id]) {
+                cart[id] = { quantity: 0, price: products.find(p => p.id === id).price };
+            }
+            cart[id].quantity++;
+            updateCart();
+        }
+
+        function updateCart() {
+            const cartCount = document.getElementById('cart-count');
+            const cartDiv = document.getElementById('cart');
+            cartDiv.innerHTML = '';
+            let total = 0;
+
+            for (let id in cart) {
+                const product = products.find(p => p.id === id);
+                const cartItem = document.createElement('div');
+                cartItem.innerHTML = `${product.name} (x${cart[id].quantity}) 
+                    <button onclick="removeFromCart('${id}')">Remove</button>
+                    <input type="number" value="${cart[id].quantity}" min="1" onchange="updateQuantity('${id}', this.value)" />
+                `;
+                cartDiv.appendChild(cartItem);
+                total += cart[id].quantity * cart[id].price;
+            }
+
+            cartCount.innerText = Object.keys(cart).length;
+            cartDiv.innerHTML += `<p>Total: $${total}</p>`;
+            document.getElementById('checkout-btn').classList.remove('hidden');
+            document.getElementById('clear-cart-btn').classList.remove('hidden');
+            cartDiv.classList.remove('hidden');
+        }
+
+        function updateQuantity(id, quantity) {
+            if (quantity < 1) {
+                alert("Quantity cannot be less than 1.");
+                return;
+            }
+            cart[id].quantity = parseInt(quantity);
+            updateCart();
+        }
+
+        function removeFromCart(id) {
+            delete cart[id];
+            updateCart();
+        }
+
+        document.getElementById('clear-cart-btn').addEventListener('click', () => {
+            cart = {};
+            updateCart();
+        });
+
+    </script>
+</body>
+</html>
